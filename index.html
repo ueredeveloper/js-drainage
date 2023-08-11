@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>replit</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- chart js-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <!-- jsts para criar um só polígono unindo vários -->
+  <script src="https://unpkg.com/jsts@2.3.0/dist/jsts.min.js"></script>
+  <!-- Turf.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@latest"></script>
+  <!-- ion icons -->
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <script src="./analysis.js"></script>
+  <!-- tools -->
+  <script src="./tools/use-tools.js"></script>
+  <!-- ferramentas -->
+  <script src="./components/use-html-elements.js"></script>
+  <script src="./components/use-polylines.js"></script>
+  <script src="./components/use-polygons.js"></script>
+  <script src="./components/use-features.js"></script>
+  <script src="./components/use-union-features.js"></script>
+  <script src="./components/use-points-in-polygon.js"></script>
+</head>
+
+<body>
+  <div id="content" class="flex flex-row flex-wrap font-bold text-center bg-indigo-500 p-5">
+    <header class="header p-2-5 flex-1 basis-full ">SAD - Sistema de Apoio à Decisão - DF</header>
+    <!-- mapa -->
+    <div class="flex-1 p-2-5 min-h-52 min-w-52">
+      <div id="map"></div>
+    </div>
+    <!-- análises -->
+    <div class="main flex-2 w-11-12">
+      <!-- Coordenadas -->
+      <fieldset data-role="controlgroup" data-type="horizontal" class="border-solid border border-slate-300">
+        <legend>Coordenadas</legend>
+        <div class="flex">
+          <label for="lat" class="mx-2">latitude:</label>
+          <!-- // coordenada de teste -15.926693648160802,-48.08341736443031 -->
+          <input type="text" id="idLat" value="-15.926693648160802" class="latlng w-5 grow ">
+          <label for="lng" class="mx-2">longitude:</label>
+          <input type="text" id="idLng" value="-48.08341736443031" class="latlng w-5 grow">
+          <div id="newLabel" />
+          <button id="btnLatLng" onclick="getLatLng()">
+            <ion-icon name="search" class="h-4 align-middle"></ion-icon>
+          </button>
+          <button id="btnCopy" onclick="copyLatLng('idLat', 'idLng')">
+            <ion-icon name="copy-outline" class="h-4 align-middle"></ion-icon>
+          </button>
+        </div>
+
+      </fieldset>
+      <!-- CAMADAS -->
+      <fieldset data-role="controlgroup" data-type="horizontal"
+        class="flex justify-center border-solid border border-slate-300">
+        <legend>Camadas</legend>
+        <form class="">
+          <label>
+            <input type="checkbox" id="bacias" value="./json/bacias-to-gmaps.json">Bacias Hidrográficas
+          </label>
+          <label>
+            <input type="checkbox" id="uhs" value="./json/uhs-to-gmaps.json">Unidades Hidrográficas
+          </label>
+        </form>
+      </fieldset>
+      <!-- GRÁFICOS E TABELAS -->
+      <div class="py-3 min-h-full">
+        <div class="flex justify-center my-2">
+          <label class="mx-2">Área de Contribuição:</label>
+          <label id="ac_id" class="mx-1"></label>
+          <div>
+            <label class="m-2" class="mx-2">Unidade Hidrográfica:</label>
+            <label id="uh_codigo_id" class="mx-1"></label>
+            <label id="uh_nome_id" class="mx-1" </label>
+          </div>
+
+        </div>
+        <div class="min-w-52 ">
+          <!-- gráficos -->
+          <div id="sl1" class="sl min-h-full">
+            <div>Gráficos</div>
+            <div>
+              <canvas id="up_chart" class="h-52 min-h-52 max-h-52 w-full max-w-full "></canvas>
+            </div>
+            <div>
+              <canvas id="uh_chart" class="h-52 min-h-52 max-h-52 w-full max-w-full"></canvas>
+            </div>
+          </div>
+          <!-- tabelas -->
+          <div id="sl2" class="sl p-2-5 overflow-x-auto min-h-full">
+            <div class="">Tabelas</div>
+            <div id="tabela_secao" class="p-2"></div>
+            <div id="tabela_uh" class="p-2"></div>
+          </div>
+          <!-- tabela -->
+          <div id="sl3" class="sl p-2-5 overflow-x-auto min-h-full">
+            <div> Ajustes e Modulações </div>
+            <div id="h_ajusta_id" class="p-2"></div>
+            <div style="margin-top: 20px" />
+            <div id="q_modula_id" class="p-2"></div>
+            <div style="margin-top: 20px" />
+            <div id="h_modula_id" class="p-2"></div>
+          </div>
+        </div>
+      </div>
+      <!-- botões -->
+      <div class="flex justify-between">
+        <button onclick="turnSlide()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <button onclick="goSlide()">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="footer p-2-5 flex-1 overflow-x-auto basis-full h-96">
+    <!--class="overflow-x-auto h-80" overflow-x-auto min-h-full-->
+    <table class="relative w-full" id="table">
+      <tbody id="tb_outorgas">
+        <tr>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">Usuário</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">CPF/CNPJ</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">Processo</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">Endereço</th>
+          <!-- vazões -->
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">jan</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">fev</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">mar</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">abr</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">mai</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">jun</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">jul</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">ago</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">set</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">out</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">nov</th>
+          <th class="sticky top-0 px-2 border-solid p-2 bg-white border	border-slate-300">dez</th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- rodapé -->
+  <footer class="footer p-2-5 flex-1 basis-full ">
+
+    <address class="flex justify-center">
+      Written by &nbsp<a href="mailto:outorga@adasa.df.gov.br"> COUT - SRH </a>.<br>
+    </address>
+  </footer>
+
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDW4w0UULt1yedMrVImzkJUwbeW_7m7Ruk&callback=initMap&v=weekly"
+    defer></script>
+  <script src="index.js"></script>
+
+</body>
+
+</html>
