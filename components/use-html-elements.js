@@ -618,7 +618,6 @@ let elemId = [];
 */
 async function atualizarTabelaOutorgas(tbody, outorgas) {
 
- // console.log(outorgas)
   // remover elementos anteriores
   Element.prototype.remove = function() {
     this.parentElement.removeChild(this);

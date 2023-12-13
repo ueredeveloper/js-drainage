@@ -69,7 +69,6 @@ async function useFeatures(lat, lng) {
       // Definir o centro do mapa para as coordenadas do centroide
       map.setCenter(centroid);
 
-      console.log('1 - useFeatures - rings: resultado da união de features', _rings);
       analises.setRingsAreaContribuicao(_rings);
     });
 }

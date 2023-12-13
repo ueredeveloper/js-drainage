@@ -8,7 +8,7 @@ const data = { latlng: '' }
 
 function initMap() {
   const myLatLng = { lat: -15.816617049522396, lng: -47.65526409580683 };
-  const brasilia ={lat: -15.7567194, lng: -47.8480161}
+  const brasilia = { lat: -15.7567194, lng: -47.8480161 }
   //-15.926693648160802,-48.08341736443031
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 10,
@@ -35,10 +35,10 @@ function initMap() {
   // carregar a shape de uhs
   fetch('./json/uhs-to-gmaps.json')
     .then(response => {
-      
+
       return response.json();
     }).then(data => {
-   
+
       usePolygons(null, google, { id: 'uhs', features: data.features }, shapes);
     });
 
@@ -77,11 +77,13 @@ function getCoordClick(e) {
   // limpar os pontos inseridos pelo método usePoinstInPolygon()
   clearPoints();
   // área de drenagem (à montante do ponto clicado)
-  console.log('1 - use features (lat, lng)')
+
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
-  console.log('2 - userPoints in Polygon (rings)')
+
   // buscar todos os pontos da unidade hidrográfica (uh)
-  usePointsInPolygon(analises.getUHRings());
+  //usePointsInPolygon(analises.getUHRings());
+  // retirando busca pelo polígono da uh e adicionando busca por atributo uh_codigo
+  usePointsByUH(analises.uh.attributes.uh_codigo);
   // calcular vazões outorgadas à montante
 
   // calcular vazões outorgadas à montante
@@ -103,11 +105,15 @@ function getLatLng() {
   analises.ll.values.lng = Number(document.getElementById('idLng').value);
   // limpar os pontos inseridos pelo método usePoinstInPolygon()
   clearPoints();
-  
+
   // área de drenagem (à montante do ponto clicado)
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
   // buscar todos os pontos da unidade hidrográfica (uh)
-  usePointsInPolygon(analises.getUHRings());
+
+  // retirando a pesquisa por polígono da UH
+  //usePointsInPolygon(analises.getUHRings());
+  // mudando para pesquisa por código da UH
+  usePointsByUH(analises.uh.attributes.uh_codigo);
   // calcular vazões outorgadas à montante
   analises.ll.marker = new google.maps.Marker({
     //attributes: feature.attributes,
@@ -133,9 +139,9 @@ function initFeatures(google, map, cb) {
     .then(response => {
       return response.json();
     }).then(data => {
-      data.features.map(f=> {
-        if(f.attributes.uh_codigo===25 || f.attributes.uh_codigo===3) {
-          console.log(f.attributes.uh_nome, f.geometry.rings[0][0].length, f.geometry.rings[0][0])
+      data.features.map(f => {
+        if (f.attributes.uh_codigo === 25 || f.attributes.uh_codigo === 3) {
+
         }
       })
       usePolygons(map, google, { id: cb.id, features: data.features }, shapes);
