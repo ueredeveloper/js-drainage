@@ -8,7 +8,7 @@ const data = { latlng: '' }
 
 function initMap() {
   const myLatLng = { lat: -15.816617049522396, lng: -47.65526409580683 };
-  const brasilia ={lat: -15.7567194, lng: -47.8480161}
+  const brasilia = { lat: -15.7567194, lng: -47.8480161 }
   //-15.926693648160802,-48.08341736443031
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 10,
@@ -22,7 +22,7 @@ function initMap() {
     checkboxes.push(document.querySelector("#" + c))
   });
   checkboxes.forEach(cb => {
-    cb.addEventListener('change', function() {
+    cb.addEventListener('change', function () {
       if (this.checked) {
 
         initFeatures(google, map, cb);
@@ -32,16 +32,7 @@ function initMap() {
     });
   });
 
-  // carregar a shape de uhs
-  fetch('./json/uhs-to-gmaps.json')
-    .then(response => {
-      
-      return response.json();
-    }).then(data => {
-   
-      usePolygons(null, google, { id: 'uhs', features: data.features }, shapes);
-    });
-
+  loadUHs();
 
   google.maps.event.addListener(map, "click", getCoordClick);
 
@@ -103,7 +94,7 @@ function getLatLng() {
   analises.ll.values.lng = Number(document.getElementById('idLng').value);
   // limpar os pontos inseridos pelo método usePoinstInPolygon()
   clearPoints();
-  
+
   // área de drenagem (à montante do ponto clicado)
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
   // buscar todos os pontos da unidade hidrográfica (uh)
@@ -133,13 +124,32 @@ function initFeatures(google, map, cb) {
     .then(response => {
       return response.json();
     }).then(data => {
-      data.features.map(f=> {
-        if(f.attributes.uh_codigo===25 || f.attributes.uh_codigo===3) {
+      data.features.map(f => {
+        if (f.attributes.uh_codigo === 25 || f.attributes.uh_codigo === 3) {
           console.log(f.attributes.uh_nome, f.geometry.rings[0][0].length, f.geometry.rings[0][0])
         }
       })
       usePolygons(map, google, { id: cb.id, features: data.features }, shapes);
     });
+}
+
+async function loadUHs() {
+  try {
+    const response = await fetch('./json/uhs-to-gmaps.json', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    usePolygons(null, google, { id: 'uhs', features: data.features }, shapes);
+  } catch (error) {
+    console.error('Error fetching or processing JSON:', error);
+  }
 }
 
 
