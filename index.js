@@ -17,10 +17,11 @@ function initMap() {
   });
 
   let checkboxes = [];
-  let cbIds = ["bacias", "uhs"];
+  let cbIds = ["bacias", "uhs", "rios"];
   cbIds.forEach(c => {
     checkboxes.push(document.querySelector("#" + c))
   });
+
   checkboxes.forEach(cb => {
     cb.addEventListener('change', function () {
       if (this.checked) {
@@ -32,8 +33,41 @@ function initMap() {
     });
   });
 
-  loadUHs();
+  // Incializa com o mapa as shape de bacias hidrográficas
+  (async () => {
 
+    await fetchShape("bacias_hidrograficas")
+      .then(features => {
+        usePolygons(null, google, { id: 'bacias', features: features }, shapes);
+      });
+
+  })();
+
+  // Inicializa com o mapa as shapes de unidades hidrográficas
+
+  (async () => {
+
+    await fetchShape("unidades_hidrograficas")
+      .then(features => {
+
+        console.log(features)
+        usePolygons(null, google, { id: 'uhs', features: features }, shapes);
+      });
+
+
+  })()
+
+
+  /* // carregar a shape de uhs
+   fetch('./json/uhs-to-gmaps.json')
+     .then(response => {
+ 
+       return response.json();
+     }).then(data => {
+ 
+       usePolygons(null, google, { id: 'uhs', features: data.features }, shapes);
+     });
+ */
   google.maps.event.addListener(map, "click", getCoordClick);
 
   // criar line chart
@@ -68,11 +102,13 @@ function getCoordClick(e) {
   // limpar os pontos inseridos pelo método usePoinstInPolygon()
   clearPoints();
   // área de drenagem (à montante do ponto clicado)
-  console.log('1 - use features (lat, lng)')
+
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
-  console.log('2 - userPoints in Polygon (rings)')
+
   // buscar todos os pontos da unidade hidrográfica (uh)
-  usePointsInPolygon(analises.getUHRings());
+  //usePointsInPolygon(analises.getUHRings());
+  // retirando busca pelo polígono da uh e adicionando busca por atributo uh_codigo
+  usePointsByUH(analises.uh.attributes.uh_codigo);
   // calcular vazões outorgadas à montante
 
   // calcular vazões outorgadas à montante
@@ -98,7 +134,12 @@ function getLatLng() {
   // área de drenagem (à montante do ponto clicado)
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
   // buscar todos os pontos da unidade hidrográfica (uh)
-  usePointsInPolygon(analises.getUHRings());
+
+  // retirando a pesquisa por polígono da UH
+  //usePointsInPolygon(analises.getUHRings());
+  // mudando para pesquisa por código da UH
+  console.log(analises.uh)
+  usePointsByUH(analises.uh.attributes.uh_codigo);
   // calcular vazões outorgadas à montante
   analises.ll.marker = new google.maps.Marker({
     //attributes: feature.attributes,
@@ -115,41 +156,47 @@ function getLatLng() {
 *  @paramcb (checkbox) { 
 *    cb.id: [poroso, fraturado, bacias, uhs], 
 *    cb.value: [
-*      "./poroso-to-gmaps.json", "./fraturado-to-gmaps.json",  
-*      "./bacias-to-gmaps.json", "./uhs-to-gmaps.json"]
+*      "bacias_hidrograficas", "unidades_hidrograficas",  
+*      "rios_df"]
 */
-function initFeatures(google, map, cb) {
+async function initFeatures(google, map, cb) {
 
-  fetch(cb.value)
-    .then(response => {
-      return response.json();
-    }).then(data => {
-      data.features.map(f => {
-        if (f.attributes.uh_codigo === 25 || f.attributes.uh_codigo === 3) {
-          console.log(f.attributes.uh_nome, f.geometry.rings[0][0].length, f.geometry.rings[0][0])
-        }
-      })
-      usePolygons(map, google, { id: cb.id, features: data.features }, shapes);
+  if (cb.value === 'rios_df'){
+    console.log(cb.value)
+  } else {
+    console.log('else', cb.value)
+    await fetchShape(cb.value)
+    .then(features => {
+
+      usePolygons(map, google, { id: 'uhs', features: features }, shapes);
     });
-}
 
-async function loadUHs() {
-  try {
-    const response = await fetch('./json/uhs-to-gmaps.json', {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    usePolygons(null, google, { id: 'uhs', features: data.features }, shapes);
-  } catch (error) {
-    console.error('Error fetching or processing JSON:', error);
   }
 }
+
+
+const url = 'https://njs-drainage-ueredeveloper.replit.app';
+/**
+* Buscar a shape solicitada no servidor
+* @param shapeName Pode ser os valores 'hidrogeo_fraturado' ou 'hidrogeo_poroso'
+*
+  */
+async function fetchShape(shapeName) {
+
+  let response = await fetch(url + `/getShape?shape=${shapeName}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/JSON',
+      'Content-Type': 'application/JSON',
+    }
+
+  }).then(res => {
+    return res.json();
+  })
+
+  return response;
+}
+
+
 
 

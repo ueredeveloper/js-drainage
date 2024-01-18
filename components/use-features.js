@@ -19,12 +19,15 @@ async function useFeatures(lat, lng) {
   await useUHInfo({ lat: lat, lng: lng });
 
   // URL para buscar as áreas de drenagem no servidor.
-  let url = 'https://njs-drainage.ueredeveloper.repl.co/drainage?' +
+  //let url = 'https://njs-drainage.ueredeveloper.repl.co/drainage?' +
+  let url = 'http://localhost:3000/drainage?' + 
     new URLSearchParams({
       lat: lat,
       lng: lng,
       uh: analises.uh.attributes.uh_codigo // atributo código da uh, ex: 37
     });
+
+    console.log(url)
 
   /**
    * Buscar as áreas de drenagem no servidor.
@@ -69,7 +72,6 @@ async function useFeatures(lat, lng) {
       // Definir o centro do mapa para as coordenadas do centroide
       map.setCenter(centroid);
 
-      console.log('1 - useFeatures - rings: resultado da união de features', _rings);
       analises.setRingsAreaContribuicao(_rings);
     });
 }

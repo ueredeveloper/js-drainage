@@ -15,19 +15,21 @@ const usePolygons = (map, google, shape, shapes) => {
   if (s !== undefined) {
     s.features.map(p => p.setMap(map));
   }
- 
+
   if (s === undefined || s.id !== shape.id) {
     let polygons = [];
-    shape.features.forEach((f, i) => {
+    shape.features.forEach((feature, i) => {
       // Adicionar atributos que serão buscados no polígono através do método contains.
-      let attributes = f.attributes;
-   
+      let attributes = feature;
+
       // Cor dos polígonos randomizada.
       // shape.montante ? '#ff0000' : '#' + Math.floor(Math.random() * 16777215).toString(16)
       let fillColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
 
       // Tratar polígonos e multipolígonos de acordo com a API do Google Maps.
-      let rings = f.geometry.rings.map(r => { return r[0] });
+      let rings = converterPostgresToGmaps(feature);
+      // let rings = f.geometry.rings.map(r => { return r[0] });
+
 
       // Criar polígono.
       const polygon = new google.maps.Polygon({
@@ -42,8 +44,33 @@ const usePolygons = (map, google, shape, shapes) => {
 
       polygon.setMap(map);
       polygons.push(polygon);
-    }); 
+    });
 
     shapes.push({ id: shape.id, features: polygons });
   }
 };
+
+/**
+ * Converte um shape do PostGIS para o formato do Google Maps.
+ * @param {object} shape - Shape a ser convertido.
+ * @returns {object[]} - Array de coordenadas no formato do Google Maps.
+ */
+function converterPostgresToGmaps(shape) {
+
+  if (shape.shape.type === 'MultiPolygon') {
+    let _paths = shape.shape.coordinates.map(coord => {
+      return coord[0].map(c => {
+        return { lat: parseFloat(c[1]), lng: parseFloat(c[0]) }
+      })
+    })
+    return _paths
+  }
+  else {
+    let _paths = shape.shape.coordinates.map(coord => {
+      return coord.map(c => {
+        return { lat: parseFloat(c[1]), lng: parseFloat(c[0]) }
+      })
+    })
+    return _paths
+  }
+}

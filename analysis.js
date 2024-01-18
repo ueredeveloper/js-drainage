@@ -368,6 +368,7 @@ class Analises {
   *  @param outorgas {object[]} Pontos outorgados nos polígonso à montante.
   */
   calcularQOutorgadaSecao(outorgas) {
+   
     // vazões outorgadas
     let _Q = {
       "q_seg_jan": 0,
@@ -397,6 +398,7 @@ class Analises {
     })
     let values = Object.values(_Q)
     this.secao.q_outorgada.values = values;
+    
     // view //////////////////////////////////////////
     this.secao.q_outorgada.values.forEach((v, i) => {
       this.secao.q_outorgada.elements[i].innerHTML = v
@@ -408,6 +410,7 @@ class Analises {
   * @param {number} area_mon Área de drenagem em Km² à montante de um ponto
   */
   calcularQReferenciaSecao(uh, area_contribuicao) {
+    console.log(uh, 'area de contribuição', area_contribuicao)
     let q_referencia_secao = []
     this.mos.values.forEach(m => {
       let qmm = 'Qmm_' + m;
