@@ -49,8 +49,6 @@ function initMap() {
 
     await fetchShape("unidades_hidrograficas")
       .then(features => {
-
-        console.log(features)
         usePolygons(null, google, { id: 'uhs', features: features }, shapes);
       });
 
@@ -138,7 +136,6 @@ function getLatLng() {
   // retirando a pesquisa por polígono da UH
   //usePointsInPolygon(analises.getUHRings());
   // mudando para pesquisa por código da UH
-  console.log(analises.uh)
   usePointsByUH(analises.uh.attributes.uh_codigo);
   // calcular vazões outorgadas à montante
   analises.ll.marker = new google.maps.Marker({
@@ -161,15 +158,20 @@ function getLatLng() {
 */
 async function initFeatures(google, map, cb) {
 
-  if (cb.value === 'rios_df'){
-    console.log(cb.value)
-  } else {
-    console.log('else', cb.value)
-    await fetchShape(cb.value)
-    .then(features => {
+  if (cb.value === 'rios_df') {
 
-      usePolygons(map, google, { id: 'uhs', features: features }, shapes);
-    });
+    let lat = Number(document.getElementById('idLat').value);
+    let lng = Number(document.getElementById('idLng').value);
+
+    await filterRiversByCoordinates({ lat, lng })
+      .then(features => {
+        usePolylinesRivers(map, google, { id: 'rios_df', features: features }, shapes)
+      });
+  } else {
+    await fetchShape(cb.value)
+      .then(features => {
+        usePolygons(map, google, { id: 'uhs', features: features }, shapes);
+      });
 
   }
 }
@@ -195,6 +197,23 @@ async function fetchShape(shapeName) {
   })
 
   return response;
+}
+
+const filterRiversByCoordinates = async ({ lat, lng }) => {
+
+  let response = await fetch(`http://localhost:3000/rivers/filterRiversByCoordinates?lat=${lat}&lng=${lng}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/JSON',
+      'Content-Type': 'application/JSON',
+    }
+
+  }).then(res => {
+    return res.json();
+  })
+
+  return response;
+
 }
 
 
