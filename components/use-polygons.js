@@ -28,8 +28,6 @@ const usePolygons = (map, google, shape, shapes) => {
 
       // Tratar polígonos e multipolígonos de acordo com a API do Google Maps.
       let rings = converterPostgresToGmaps(feature);
-      // let rings = f.geometry.rings.map(r => { return r[0] });
-
 
       // Criar polígono.
       const polygon = new google.maps.Polygon({

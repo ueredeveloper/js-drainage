@@ -49,6 +49,7 @@ function modificarValoresDosElementos() {
 
   analises.calcularQOutorgadaSecao(analises.secao.outorgas);
 
+
   analises.calcularQReferenciaSecao(analises.uh.attributes, analises.secao.area_contribuicao.value);
   //80%
   analises.calcularQOutorgavelSecao(analises.secao.q_referencia);

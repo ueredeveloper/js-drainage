@@ -9,14 +9,6 @@
  */
 const usePolylinesRivers = async (map, google, features, shapes) => {
 
-  // Checa se a 'shape' já existe na lista 'shapes'
-  let s = shapes.find(sh => sh.id === features.id);
-
-  // Seta ou remove do mapa, setMap(map) ou setMap(null)
-  if (s !== undefined) { s.features.map(p => p.setMap(map)) }
-
-  // Adiciona no mapa novas polilinhas
-  if (s === undefined || s.id !== features.id) {
     let polylines = [];
 
     if (features) {
@@ -26,6 +18,7 @@ const usePolylinesRivers = async (map, google, features, shapes) => {
        `
        <h3> Informações do Rio</h3>
        <p>Nome: ${feature.properties.nome}</p>
+       <p>Classe: ${feature.properties.classe}</p>
        <p>Afluente Esquerda: ${feature.properties.aflu_esq}</p>
        <p>Afluente Direita: ${feature.properties.aflu_dir}</p>
        <p>RA: ${feature.properties.ra}</p>
@@ -94,9 +87,8 @@ const usePolylinesRivers = async (map, google, features, shapes) => {
 
         }
 
-        shapes.push({ id: features.id, class: '', features: polylines })
+        shapes.push({ id: features.id, class: '',f: features,  features: polylines })
       })
     }
 
-  }
 }

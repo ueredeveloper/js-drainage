@@ -413,8 +413,8 @@ class Analises {
     console.log(uh, 'area de contribuição', area_contribuicao)
     let q_referencia_secao = []
     this.mos.values.forEach(m => {
-      let qmm = 'Qmm_' + m;
-      q_referencia_secao.push((Number(uh[qmm]) / Number(uh.Area_Km_sq) * Number(area_contribuicao)).toFixed(2))
+      let qmm = 'qmm_' + m;
+      q_referencia_secao.push((Number(uh[qmm]) / Number(uh.area_km_sq) * Number(area_contribuicao)).toFixed(2))
     })
     this.secao.q_referencia.values = q_referencia_secao;
     // view //////////////////////////////////////////
@@ -592,7 +592,7 @@ class Analises {
   calcularQReferenciaUH(uh) {
     let _vr = []
     this.mos.values.forEach(m => {
-      let qmm = 'Qmm_' + m;
+      let qmm = 'qmm_' + m;
       _vr.push((Number(uh[qmm])))
     })
     this.uh.q_referencia.values = _vr

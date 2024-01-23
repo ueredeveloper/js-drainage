@@ -28,6 +28,7 @@ async function usePointsInPolygon(rings) {
       let marker = new google.maps.Marker({
         attributes: feature,
         position: { lat: parseFloat(feature.latitude), lng: parseFloat(feature.longitude) },
+        icon: `https://www.google.com/intl/en_us/mapfiles/ms/micons/green-dot.png`,
         // não mostrar no mapa, só mostrar os marcadores relacionados com a área de drenagem
         // map,
       });
@@ -101,6 +102,7 @@ async function usePointsByUH(uh_codigo) {
       let marker = new google.maps.Marker({
         attributes: feature,
         position: { lat: parseFloat(feature.latitude), lng: parseFloat(feature.longitude) },
+        icon: `https://www.google.com/intl/en_us/mapfiles/ms/micons/green-dot.png`,
         // não mostrar no mapa, só mostrar os marcadores relacionados com a área de drenagem
         // map,
       });

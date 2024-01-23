@@ -20,14 +20,14 @@ async function useFeatures(lat, lng) {
 
   // URL para buscar as áreas de drenagem no servidor.
   //let url = 'https://njs-drainage.ueredeveloper.repl.co/drainage?' +
-  let url = 'http://localhost:3000/drainage?' + 
+  let url = 'http://localhost:3000/drainage?' +
     new URLSearchParams({
       lat: lat,
       lng: lng,
       uh: analises.uh.attributes.uh_codigo // atributo código da uh, ex: 37
     });
 
-    console.log(url)
+  console.log(url)
 
   /**
    * Buscar as áreas de drenagem no servidor.
@@ -133,18 +133,21 @@ const createGmapsPolygon = (json) => {
   const reader = new jsts.io.GeoJSONReader();
   const jstsGeoms = featureCollection.features.map((feature) => reader.read(JSON.stringify(feature.geometry)));
 
-  // Perform the union operation using JSTS
-  const union_start = Date.now();
+  // Verifica performance a união de polígonos
+  // const union_start = Date.now();
+
+  // Une os polígonos em um só para solicitações no servidor
   const jstsUnion = jstsGeoms.reduce((accumulator, geometry) => accumulator.union(geometry));
-  const union_end = Date.now();
-  console.log(`jsts time execution: ${(union_end - union_start) / 1000} segundos`)
-  
-  const gmaps_start = Date.now();
+
+  // const union_end = Date.now();
+  // console.log(`jsts time execution: ${(union_end - union_start) / 1000} segundos`)
+
+  //const gmaps_start = Date.now();
   let gmapsCoords = jstsUnion.getCoordinates().map(coords => {
     return { lat: coords.y, lng: coords.x }
   });
-  const gmaps_end = Date.now();
-  console.log(`jsts to gmaps time execution: ${(gmaps_end - gmaps_start) / 1000} segundos`)
+  //const gmaps_end = Date.now();
+  //console.log(`jsts to gmaps time execution: ${(gmaps_end - gmaps_start) / 1000} segundos`)
 
   // Criar e retornar o novo polígono do Google Maps
   const newPolygon = new google.maps.Polygon({

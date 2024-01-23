@@ -17,7 +17,7 @@ function initMap() {
   });
 
   let checkboxes = [];
-  let cbIds = ["bacias", "uhs", "rios"];
+  let cbIds = ["bacias", "uhs", "rios_df"];
   cbIds.forEach(c => {
     checkboxes.push(document.querySelector("#" + c))
   });
@@ -25,7 +25,6 @@ function initMap() {
   checkboxes.forEach(cb => {
     cb.addEventListener('change', function () {
       if (this.checked) {
-
         initFeatures(google, map, cb);
       } else {
         initFeatures(google, null, cb);
@@ -35,37 +34,20 @@ function initMap() {
 
   // Incializa com o mapa as shape de bacias hidrográficas
   (async () => {
-
     await fetchShape("bacias_hidrograficas")
       .then(features => {
         usePolygons(null, google, { id: 'bacias', features: features }, shapes);
       });
-
   })();
 
   // Inicializa com o mapa as shapes de unidades hidrográficas
-
   (async () => {
-
     await fetchShape("unidades_hidrograficas")
       .then(features => {
         usePolygons(null, google, { id: 'uhs', features: features }, shapes);
       });
+  })();
 
-
-  })()
-
-
-  /* // carregar a shape de uhs
-   fetch('./json/uhs-to-gmaps.json')
-     .then(response => {
- 
-       return response.json();
-     }).then(data => {
- 
-       usePolygons(null, google, { id: 'uhs', features: data.features }, shapes);
-     });
- */
   google.maps.event.addListener(map, "click", getCoordClick);
 
   // criar line chart
@@ -113,9 +95,18 @@ function getCoordClick(e) {
   analises.ll.marker = new google.maps.Marker({
     //attributes: feature.attributes,
     position: { lat: analises.ll.values.lat, lng: analises.ll.values.lng },
+    icon: `https://www.google.com/intl/en_us/mapfiles/ms/micons/red-dot.png`,
     // não mostrar no mapa, só mostrar os marcadores relacionados com a área de drenagem
     map,
   });
+
+  // Adicionar animação ao marcador buscado pelo usuário.
+  analises.ll.marker.setAnimation(google.maps.Animation.BOUNCE);
+
+  // Após cinco segundos remover animação do marcador.
+  setTimeout(function () {
+    analises.ll.marker.setAnimation(null);
+  }, 4000);
 
 }
 /**
@@ -141,9 +132,18 @@ function getLatLng() {
   analises.ll.marker = new google.maps.Marker({
     //attributes: feature.attributes,
     position: { lat: analises.ll.values.lat, lng: analises.ll.values.lng },
+    icon: `https://www.google.com/intl/en_us/mapfiles/ms/micons/red-dot.png`,
     // não mostrar no mapa, só mostrar os marcadores relacionados com a área de drenagem
     map,
   });
+
+  // Adicionar animação ao marcador buscado pelo usuário.
+  analises.ll.marker.setAnimation(google.maps.Animation.BOUNCE);
+
+  // Após cinco segundos remover animação do marcador.
+  setTimeout(function () {
+    analises.ll.marker.setAnimation(null);
+  }, 10000);
 
 }
 /**
@@ -160,15 +160,31 @@ async function initFeatures(google, map, cb) {
 
   if (cb.value === 'rios_df') {
 
-    let lat = Number(document.getElementById('idLat').value);
-    let lng = Number(document.getElementById('idLng').value);
+    if (cb.checked) {
+      let lat = document.getElementById("idLat").value;
+      let lng = document.getElementById("idLng").value;
+      await filterRiversByCoordinates(lat, lng)
+        .then(features => {
+          usePolylinesRivers(map, google, { id: 'rios_df', features: features }, shapes)
+        });
+    } else {
 
-    await filterRiversByCoordinates({ lat, lng })
-      .then(features => {
-        usePolylinesRivers(map, google, { id: 'rios_df', features: features }, shapes)
-      });
+      // Verificar se a `shape` existe na lista `shapes`.
+      let s = shapes.find(sh => sh.id === 'rios_df');
+
+      // Adicionar ou remover os polígonos do mapa utilizando setMap(map) ou setMap(null).
+      if (s !== undefined) {
+        // remove do mapa
+        s.features.map(p => p.setMap(null));
+        // remove da variável `shapes`
+        shapes = shapes.filter(shape => shape.id !== 'rios_df')
+      }
+
+    }
   } else {
+    console.log('cb ', cb.value)
     await fetchShape(cb.value)
+
       .then(features => {
         usePolygons(map, google, { id: 'uhs', features: features }, shapes);
       });
@@ -199,7 +215,9 @@ async function fetchShape(shapeName) {
   return response;
 }
 
-const filterRiversByCoordinates = async ({ lat, lng }) => {
+const filterRiversByCoordinates = async (lat, lng) => {
+
+  console.log('fil rivers by coordinates ', lat, lng)
 
   let response = await fetch(`http://localhost:3000/rivers/filterRiversByCoordinates?lat=${lat}&lng=${lng}`, {
     method: 'GET',

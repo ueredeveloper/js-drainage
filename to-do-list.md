@@ -20,5 +20,9 @@ Buscar outra forma de trazer os pontos pois o porta (gis.adasa...) está funcion
 
 
 ## 18 de janeiro de 2024
-  ### [] Tarefa: Charts
-    * Os dados não estão indo para os charts.
+  * [x] Tarefa 1: Rios
+    * Adicionar polilinhas de rios.
+      * Resolvido em 19/01/24.
+  * [] Tarefa 2: Charts
+      * Os dados não estão indo para os charts.
+
