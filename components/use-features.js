@@ -19,8 +19,8 @@ async function useFeatures(lat, lng) {
   await useUHInfo({ lat: lat, lng: lng });
 
   // URL para buscar as áreas de drenagem no servidor.
-  //let url = 'https://njs-drainage.ueredeveloper.repl.co/drainage?' +
-  let url = 'http://localhost:3000/drainage?' +
+  let url = 'https://njs-drainage-ueredeveloper.replit.app/drainage?' +
+    //let url = 'http://localhost:3000/drainage?' +
     new URLSearchParams({
       lat: lat,
       lng: lng,

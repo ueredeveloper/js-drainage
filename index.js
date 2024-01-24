@@ -1,18 +1,16 @@
 // mapa
 var map;
-// lista de polígonos criados
+// lista de polígonos e polilinhas solicitados pelo usuário
 var shapes = [];
 const analises = new Analises();
 
-const data = { latlng: '' }
-
 function initMap() {
-  const myLatLng = { lat: -15.816617049522396, lng: -47.65526409580683 };
-  const brasilia = { lat: -15.7567194, lng: -47.8480161 }
-  //-15.926693648160802,-48.08341736443031
+
+  const latLng = { lat: -15.7567194, lng: -47.8480161 }
+
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 10,
-    center: brasilia,
+    center: latLng,
     mapTypeId: 'hybrid'
   });
 
@@ -81,8 +79,11 @@ function getCoordClick(e) {
   document.getElementById("idLng").value = analises.ll.values.lng;
   // limpar os pontos inseridos pelo método usePoinstInPolygon()
   clearPoints();
-  // área de drenagem (à montante do ponto clicado)
 
+  // limpar o mapa dos rios solicitados  anteriormente
+  removeRivers();
+
+  // área de drenagem (à montante do ponto clicado)
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
 
   // buscar todos os pontos da unidade hidrográfica (uh)
@@ -120,6 +121,7 @@ function getLatLng() {
   // limpar os pontos inseridos pelo método usePoinstInPolygon()
   clearPoints();
 
+  removeRivers()
   // área de drenagem (à montante do ponto clicado)
   useFeatures(analises.ll.values.lat, analises.ll.values.lng);
   // buscar todos os pontos da unidade hidrográfica (uh)
@@ -168,18 +170,7 @@ async function initFeatures(google, map, cb) {
           usePolylinesRivers(map, google, { id: 'rios_df', features: features }, shapes)
         });
     } else {
-
-      // Verificar se a `shape` existe na lista `shapes`.
-      let s = shapes.find(sh => sh.id === 'rios_df');
-
-      // Adicionar ou remover os polígonos do mapa utilizando setMap(map) ou setMap(null).
-      if (s !== undefined) {
-        // remove do mapa
-        s.features.map(p => p.setMap(null));
-        // remove da variável `shapes`
-        shapes = shapes.filter(shape => shape.id !== 'rios_df')
-      }
-
+      removeRivers()
     }
   } else {
     console.log('cb ', cb.value)
@@ -217,9 +208,7 @@ async function fetchShape(shapeName) {
 
 const filterRiversByCoordinates = async (lat, lng) => {
 
-  console.log('fil rivers by coordinates ', lat, lng)
-
-  let response = await fetch(`http://localhost:3000/rivers/filterRiversByCoordinates?lat=${lat}&lng=${lng}`, {
+  let response = await fetch(url +  `/rivers/filterRiversByCoordinates?lat=${lat}&lng=${lng}`, {
     method: 'GET',
     headers: {
       Accept: 'application/JSON',
@@ -233,6 +222,33 @@ const filterRiversByCoordinates = async (lat, lng) => {
   return response;
 
 }
+
+/**
+ * Remove os rios do mapa e atualiza a lista de formas.
+ *
+ */
+const removeRivers = () => {
+  // Obtém a referência ao elemento de checkbox para rios no DOM.
+  let checkbox = document.getElementById('rios_df');
+
+  // Se o checkbox estiver marcado, desmarca-o.
+  if (checkbox.checked) {
+    checkbox.checked = false;
+  }
+
+  // Verifica se a forma `rios_df` existe na lista de formas (`shapes`).
+  let s = shapes.find(sh => sh.id === 'rios_df');
+
+  // Remove os rios do mapa utilizando setMap(null).
+  if (s !== undefined) {
+    // Itera sobre as features e as remove do mapa.
+    s.features.map(p => p.setMap(null));
+    
+    // Remove a forma da lista de formas (`shapes`).
+    shapes = shapes.filter(shape => shape.id !== 'rios_df');
+  }
+};
+
 
 
 

@@ -23,6 +23,12 @@ Buscar outra forma de trazer os pontos pois o porta (gis.adasa...) está funcion
   * [x] Tarefa 1: Rios
     * Adicionar polilinhas de rios.
       * Resolvido em 19/01/24.
-  * [] Tarefa 2: Charts
+  * [X] Tarefa 2: Charts
       * Os dados não estão indo para os charts.
+          19/01/24 - Resolvido atualizando a shape de unidades hidrográficas que no banco ainda não tinha as vazões mensais (Qmm_jan, ...).
+
+## 24 de janeiro de 2024
+
+  * [ ] Tafera - Limpar mapa - Rios
+    * Ao buscar nova  coordenada limpar o mapa das shapes de rios solicitada anteriormente.
 

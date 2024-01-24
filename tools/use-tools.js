@@ -87,6 +87,8 @@ const gmapsToArcGis = (rings) => {
 function clearPoints() {
   analises.secao.outorgas.forEach(m => m.setMap(null));
   analises.uh.outorgas.forEach(m => m.setMap(null));
+
+  console.log(analises)
   if (analises.ll.marker !== null) {
     analises.ll.marker.setMap(null);
   }
