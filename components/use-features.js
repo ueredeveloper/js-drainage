@@ -12,24 +12,27 @@ let polylines = [];
  */
 async function useFeatures(lat, lng) {
   // Remover polylines existentes do mapa antes de buscar novas áreas de drenagem.
-  polylines.forEach(poly => { poly.setMap(null); });
+  polylines.forEach((poly) => {
+    poly.setMap(null);
+  });
   polylines = [];
 
   // Buscar informações sobre a unidade hidrográfica a partir da coordenada fornecida.
   await useUHInfo({ lat: lat, lng: lng });
 
-  console.log("Teste: " , lat, lng, analises.uh.attributes.uh_codigo)
+  console.log("Teste: ", lat, lng, analises.uh.attributes.uh_codigo);
 
   // URL para buscar as áreas de drenagem no servidor.
-  let url = 'https://njs-drainage-ueredeveloper.replit.app/drainage?' +
+  let url =
+    "https://njs-drainage-ueredeveloper.replit.app/drainage?" +
     //let url = 'http://localhost:3000/drainage?' +
     new URLSearchParams({
       lat: lat,
       lng: lng,
-      uh: analises.uh.attributes.uh_codigo // atributo código da uh, ex: 37
+      uh: analises.uh.attributes.uh_codigo, // atributo código da uh, ex: 37
     });
 
-  console.log(url)
+  console.log(url);
 
   /**
    * Buscar as áreas de drenagem no servidor.
@@ -38,40 +41,39 @@ async function useFeatures(lat, lng) {
    * @param {string} uh Unidade Hidrográfica.
    * @returns {Promise<Array>} Uma Promise que resolve com as informações de áreas de drenagem.
    */
-  await fetch(url, { method: 'GET', })
-    .then(features => {
-
+  await fetch(url, { method: "GET" })
+    .then((features) => {
       let json = features.json();
-      console.log('Teste: features to json ', json);
+      console.log("Teste: features to json ", json);
       return json;
     })
-    .then(features => {
-      console.log('Teste then, features ', features)
+    .then((features) => {
+      console.log("Teste then, features ", features);
       let gmapsFeatures = arcGisToGmaps(features);
 
-      console.log('Teste, arc gis to gmaps , gmaps features ', gmapsFeatures)
+      console.log("Teste, arc gis to gmaps , gmaps features ", gmapsFeatures);
       // Calcular a área total das áreas de drenagem (área de contribuição).
       analises.calcularAreaContribuicao(gmapsFeatures);
 
-      console.log('Teste: cálculo área de contribuição ', analises.secao)
+      console.log("Teste: cálculo área de contribuição ", analises.secao);
       // Renderizar polilinhas no mapa com as áreas de drenagem.
-      gmapsFeatures.forEach(f => {
+      gmapsFeatures.forEach((f) => {
         polylines.push(
           new google.maps.Polyline({
             path: f.geometry.rings[0][0],
             geodesic: true,
-            strokeColor: '#0000FF',
+            strokeColor: "#0000FF",
             strokeOpacity: 0.8,
             strokeWeight: 1,
-            map
-          })
+            map,
+          }),
         );
       });
 
       // Unir os polígonos para fazer uma única requisição no serviço REST.
       let _rings = createGmapsPolygon(features);
 
-      console.log('Teste _rings ', _rings)
+      console.log("Teste _rings ", _rings);
 
       // Obter o caminho (vértices) do polígono
       const pathOfPolygon = _rings.getPath().getArray();
@@ -95,8 +97,8 @@ async function useFeatures(lat, lng) {
  */
 const useUHInfo = (latLng) => {
   for (let i = 0; i < shapes.length; i++) {
-    if (shapes[i].id === 'uhs') {
-      shapes[i].features.forEach(f => {
+    if (shapes[i].id === "uhs") {
+      shapes[i].features.forEach((f) => {
         // Verificar se a coordenada está dentro do polígono da Unidade Hidrográfica.
         if (google.maps.geometry.poly.containsLocation(latLng, f)) {
           // Converter os polígonos do formato Google Maps para ArcGIS e obter informações da UH.
@@ -106,7 +108,7 @@ const useUHInfo = (latLng) => {
       });
     }
   }
-}
+};
 
 /**
  * Calcula o centroide de um polígono.
@@ -127,57 +129,43 @@ const getPolygonCentroid = (vertices) => {
   const centroidLng = lngSum / numVertices;
 
   return { lat: centroidLat, lng: centroidLng };
-}
+};
 
 /**
  * Criar um polígono do Google Maps a partir de um objeto GeoJSON com multipolígonos.
  * @param {object[]} json Array de objetos GeoJSON que representam polígonos.
  * @returns {google.maps.Polygon} Objeto Polygon do Google Maps resultante da união dos polígonos.
  */
-const createGmapsPolygon = (json) => {
+const createGmapsPolygon = (polygons) => {
+  // Função de união dos polígonos. Assim se faz apenas uma requisição no serviço.
+  function unionPolygons(polygons) {
+    // Perform union operation on the list of polygons
+    let unionResult = polygons.reduce((acc, polygon) => {
+      return turf.union(acc, polygon);
+    });
 
-  console.log('Teste: create Gmaps Polygon json ', json)
-  const featureCollection = turf.featureCollection([...json.map((coords, i) => {
-    let polygon =  turf.polygon(coords.geometry.rings);
-    console.log('Teste: criar turf polygon ','index: ', i, 'polygon ', polygon  );
-    return polygon
-  })]);
+    return unionResult;
+  }
 
-  // Converter com `Turf.js` coleção de polígonos para `JSTS geometries`
-  const reader = new jsts.io.GeoJSONReader();
-  const jstsGeoms = featureCollection.features.map((feature) => reader.read(feature.geometry));
+  // Conversao de Turf Polygon em Gmaps Polygon.
+  function turfPolygonToGoogleMapsPolygon(turfPolygon) {
+    const paths = turfPolygon.geometry.coordinates[0].map(
+      (coord) => new google.maps.LatLng(coord[1], coord[0]),
+    );
+    const polygon = new google.maps.Polygon({ paths: paths });
+    return polygon;
+  }
 
-  console.log('Teste jstsGeoms ', jstsGeoms)
+  // Conversao para turf features.
+  const turfPolygons = polygons.map((polygon) =>
+    turf.polygon(polygon.geometry.rings),
+  );
 
-  // Verifica performance a união de polígonos
-  // const union_start = Date.now();
+  // União dos polígonos.
+  const unionPolygon = unionPolygons(turfPolygons);
 
-  // Une os polígonos em um só para solicitações no servidor
-  const jstsUnion = jstsGeoms.reduce((accumulator, geometry) => accumulator.union(geometry));
+  // Conversão de Turf.js polygon para Google Maps polygon.
+  const newGmapsPolygon = turfPolygonToGoogleMapsPolygon(unionPolygon);
 
-  console.log('Teste jstsUnion ', jstsUnion)
-
-  // const union_end = Date.now();
-  // console.log(`jsts time execution: ${(union_end - union_start) / 1000} segundos`)
-
-  //const gmaps_start = Date.now();
-  let gmapsCoords = jstsUnion.getCoordinates().map(coords => {
-    return { lat: coords.y, lng: coords.x }
-  });
-  //const gmaps_end = Date.now();
-  //console.log(`jsts to gmaps time execution: ${(gmaps_end - gmaps_start) / 1000} segundos`)
-
-  // Criar e retornar o novo polígono do Google Maps
-  const newPolygon = new google.maps.Polygon({
-    paths: gmapsCoords,
-    strokeColor: '#FF0000',
-    strokeOpacity: 0.3,
-    strokeWeight: 0.3,
-    fillColor: '#FF0000',
-    fillOpacity: 0.35,
-  });
-
-  console.log('Teste: new polygon ', newPolygon)
-
-  return newPolygon;
-}
+  return newGmapsPolygon;
+};

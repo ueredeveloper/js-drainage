@@ -33,5 +33,6 @@ Buscar outra forma de trazer os pontos pois o porta (gis.adasa...) está funcion
     * Ao buscar nova  coordenada limpar o mapa das shapes de rios solicitada anteriormente.
         * 
 ## 02 de Abril de 2024
-  * [] A servidora Jéssica verifica erro na coordenada: -16.049001, -47.380521.
+  * [X] A servidora Jéssica verifica erro na coordenada: -16.049001, -47.380521.
+    * Foi revisto o método de união de polígonos.
 
