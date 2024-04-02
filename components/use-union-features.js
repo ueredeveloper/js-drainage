@@ -6,7 +6,7 @@
 */
 function useUnionFeatures(features) {
 
-  console.log(features)
+  console.log('union features ', features)
 
   let _features = features
 
