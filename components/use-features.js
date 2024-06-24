@@ -135,6 +135,8 @@ const getPolygonCentroid = (vertices) => {
  * @returns {google.maps.Polygon} Objeto Polygon do Google Maps resultante da união dos polígonos.
  */
 const createGmapsPolygon = (polygons) => {
+
+  console.log(polygons)
   // Função de união dos polígonos. Assim se faz apenas uma requisição no serviço.
   function unionPolygons(polygons) {
     // Perform union operation on the list of polygons

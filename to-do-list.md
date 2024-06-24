@@ -35,4 +35,6 @@ Buscar outra forma de trazer os pontos pois o porta (gis.adasa...) está funcion
 ## 02 de Abril de 2024
   * [X] A servidora Jéssica verifica erro na coordenada: -16.049001, -47.380521.
     * Foi revisto o método de união de polígonos.
+## 24 de Junho de 2024
+  * [] Erro descrito pela Magda devido à atualização da biblioteca Turf. Sendo assim modifiquei para a versão 6.5.0, não mais latest version automático.
 
