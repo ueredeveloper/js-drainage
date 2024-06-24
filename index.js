@@ -5,6 +5,7 @@ var shapes = [];
 const analises = new Analises();
 
 function initMap() {
+  
 
   const latLng = { lat: -15.7567194, lng: -47.8480161 }
 

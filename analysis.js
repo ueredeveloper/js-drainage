@@ -368,6 +368,8 @@ class Analises {
   *  @param outorgas {object[]} Pontos outorgados nos polígonso à montante.
   */
   calcularQOutorgadaSecao(outorgas) {
+
+    console.log (outorgas)
    
     // vazões outorgadas
     let _Q = {

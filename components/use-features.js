@@ -20,8 +20,6 @@ async function useFeatures(lat, lng) {
   // Buscar informações sobre a unidade hidrográfica a partir da coordenada fornecida.
   await useUHInfo({ lat: lat, lng: lng });
 
-  console.log("Teste: ", lat, lng, analises.uh.attributes.uh_codigo);
-
   // URL para buscar as áreas de drenagem no servidor.
   let url =
     "https://njs-drainage-ueredeveloper.replit.app/drainage?" +
@@ -32,7 +30,7 @@ async function useFeatures(lat, lng) {
       uh: analises.uh.attributes.uh_codigo, // atributo código da uh, ex: 37
     });
 
-  console.log(url);
+  //console.log(url);
 
   /**
    * Buscar as áreas de drenagem no servidor.
@@ -48,14 +46,14 @@ async function useFeatures(lat, lng) {
       return json;
     })
     .then((features) => {
-      console.log("Teste then, features ", features);
+      //console.log("Teste then, features ", features);
       let gmapsFeatures = arcGisToGmaps(features);
 
-      console.log("Teste, arc gis to gmaps , gmaps features ", gmapsFeatures);
+      // console.log("Teste, arc gis to gmaps , gmaps features ", gmapsFeatures);
       // Calcular a área total das áreas de drenagem (área de contribuição).
       analises.calcularAreaContribuicao(gmapsFeatures);
 
-      console.log("Teste: cálculo área de contribuição ", analises.secao);
+      //  console.log("Teste: cálculo área de contribuição ", analises.secao);
       // Renderizar polilinhas no mapa com as áreas de drenagem.
       gmapsFeatures.forEach((f) => {
         polylines.push(
@@ -73,7 +71,7 @@ async function useFeatures(lat, lng) {
       // Unir os polígonos para fazer uma única requisição no serviço REST.
       let _rings = createGmapsPolygon(features);
 
-      console.log("Teste _rings ", _rings);
+      //console.log("Teste _rings ", _rings);
 
       // Obter o caminho (vértices) do polígono
       const pathOfPolygon = _rings.getPath().getArray();
@@ -155,12 +153,19 @@ const createGmapsPolygon = (polygons) => {
     const polygon = new google.maps.Polygon({ paths: paths });
     return polygon;
   }
+  
 
+  /* Sorteia os polígonos pelo OBJECTID, do maior para o menor. Percebi que assim une-se os polígonos melhor e resolve o problema da UH 40, em que um dos polígonos, OBJECTID 23327, deu erro de junção sem esta ordenação.
+   */
+  const polygonsSortedByObjectId = polygons.sort((a, b) => {
+    return b.attributes.OBJECTID - a.attributes.OBJECTID;
+  });
   // Conversao para turf features.
-  const turfPolygons = polygons.map((polygon) =>
+  const turfPolygons = polygonsSortedByObjectId.map((polygon) =>
     turf.polygon(polygon.geometry.rings),
   );
 
+  
   // União dos polígonos.
   const unionPolygon = unionPolygons(turfPolygons);
 
