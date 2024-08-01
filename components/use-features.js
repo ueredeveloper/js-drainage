@@ -138,13 +138,34 @@ const createGmapsPolygon = (polygons) => {
 
   console.log(polygons)
   // Função de união dos polígonos. Assim se faz apenas uma requisição no serviço.
-  function unionPolygons(polygons) {
+  /*function unionPolygons(polygons) {
     // Perform union operation on the list of polygons
     let unionResult = polygons.reduce((acc, polygon) => {
       return turf.union(acc, polygon);
     });
 
     return unionResult;
+  }*/
+  // Função para unir polígonos, se não conseguir com algum continua a união.
+  function unionPolygons(polygons) {
+      if (!polygons || polygons.length === 0) {
+          throw new Error('No polygons provided for union.');
+      }
+
+      // Inicializa o acumulador com o primeiro polígono
+      let unionResult = polygons[0];
+
+      // Itera sobre os polígonos restantes
+      polygons.slice(1).forEach(polygon => {
+          try {
+              unionResult = turf.union(unionResult, polygon);
+          } catch (error) {
+              console.warn('Error uniting polygons:', error.message);
+              // Continue para o próximo polígono
+          }
+      });
+
+      return unionResult;
   }
 
   // Conversao de Turf Polygon em Gmaps Polygon.

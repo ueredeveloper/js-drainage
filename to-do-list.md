@@ -38,3 +38,6 @@ Buscar outra forma de trazer os pontos pois o porta (gis.adasa...) está funcion
 ## 24 de Junho de 2024
   * [] Erro descrito pela Magda devido à atualização da biblioteca Turf. Sendo assim modifiquei para a versão 6.5.0, não mais latest version automático.
 
+## 01/08/2024
+* [x] A servidora Simone reclama das coordenadas, -15.723458°, -47.862192°, que engloba área da Barragem de Santa Maria. Na união de polígonos um polígon não era válido. Foi adicionado um try catch no método `unionPolygons` para a união continuar mesmo se algum polígono for inválido.
+
