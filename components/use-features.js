@@ -41,6 +41,8 @@ async function useFeatures(lat, lng) {
    */
   await fetch(url, { method: "GET" })
     .then((features) => {
+
+      console.log('verifica tamanho: ', features.length)
       let json = features.json();
       console.log("Teste: features to json ", json);
       return json;
